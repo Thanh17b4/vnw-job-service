@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
-from service.jobs import job_router
 from service.job_location import job_location_router
+from service.jobs import job_router
 from service.job_category import job_category_router
 from service.job_benefit import job_benefit_router
 app = FastAPI()

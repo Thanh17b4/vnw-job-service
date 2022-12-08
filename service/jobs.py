@@ -1,11 +1,12 @@
-
-from starlette import status
-from jobs.model.check_data import is_blank, is_integer
-from jobs.config import mydb
-from jobs.schemas.schemas import Job, JobResult, JobListResult
-from slugify import slugify
-from fastapi import APIRouter, Response
 import urllib3
+from fastapi import APIRouter, Response
+from slugify import slugify
+from starlette import status
+
+from config import mydb
+from model.check_data import is_blank, is_integer
+from schemas.schemas import Job, JobResult, JobListResult
+
 job_router = APIRouter()
 
 
@@ -27,7 +28,8 @@ def create_job(request: Job, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
         sql = "INSERT INTO jobs (name, cv_language, type, slug, company_id, level, due_at, salary) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
-        val = (job["name"], job["cv_language"], job["type"], slug, job["company_id"], job["level"], job["due_at"], job["salary"])
+        val = (job["name"], job["cv_language"], job["type"], slug, job["company_id"], job["level"], job["due_at"],
+               job["salary"])
         my_cursor.execute(sql, val)
         mydb.commit()
         response.status_code = status.HTTP_201_CREATED
@@ -108,7 +110,7 @@ async def update_job(id: int, req: Job, response: Response):
         my_cursor = mydb.cursor()
         slug = slugify(job["name"])
         sql = "UPDATE jobs SET name = %s, level = %s, cv_language = %s, type = %s, company_id = %s, due_at = %s, slug = %s   WHERE id = %s"
-        val = (job["name"], job["level"], job["cv_language"], job["type"], job["company_id"],  job["due_at"], slug, id)
+        val = (job["name"], job["level"], job["cv_language"], job["type"], job["company_id"], job["due_at"], slug, id)
         my_cursor.execute(sql, val)
         return f"{my_cursor.rowcount} row affected"
 

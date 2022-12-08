@@ -1,10 +1,12 @@
 import urllib3
-from starlette import status
-from jobs.model.check_data import is_integer
-from jobs.config import mydb
-from jobs.schemas.schemas import JobBenefitResult, JobBenefit, JobBenefitListResult
 from fastapi import APIRouter, Response
+from starlette import status
+
+from config import mydb
+from model.check_data import is_integer
+from schemas.schemas import JobBenefitResult, JobBenefit, JobBenefitListResult
 from .jobs import detail_job
+
 job_benefit_router = APIRouter()
 
 

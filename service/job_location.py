@@ -1,9 +1,10 @@
 import urllib3
-from starlette import status
-from .jobs import detail_job
-from jobs.config import mydb
-from jobs.schemas.schemas import JobLocationResult, JobLocationListResult, JobLocation
 from fastapi import APIRouter, Response
+from starlette import status
+
+from config import mydb
+from schemas.schemas import JobLocationResult, JobLocationListResult, JobLocation
+from .jobs import detail_job
 
 job_location_router = APIRouter()
 
@@ -93,7 +94,7 @@ def all_job_location(page: int, limit: int, response: Response):
 async def update_job_location(id: int, req: JobLocation, response: Response):
     # check job_location existed or not in job_location table
     new_job_location = req.job_location_to_dict()
-    boolean,old_job_location = detail_job_location(id, response)
+    boolean, old_job_location = detail_job_location(id, response)
     if boolean is False:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return old_job_location

@@ -1,4 +1,5 @@
 from datetime import datetime, date
+
 from pydantic import BaseModel
 
 
@@ -47,14 +48,15 @@ def JobResult(job) -> dict:
     return {
         "id": job[0],
         "name": job[1],
-        "level": job[2],
-        "cv_language": job[3],
-        "type": job[4],
-        "slug": job[5],
-        "company_id": int(job[6]),
-        "created_at": job[7],
-        "updated_at": job[8],
-        "due_at": job[9]
+        "salary": job[2],
+        "level": job[3],
+        "cv_language": job[4],
+        "type": job[5],
+        "slug": job[6],
+        "company_id": int(job[7]),
+        "created_at": job[8],
+        "updated_at": job[9],
+        "due_at": job[10]
     }
 
 
