@@ -2,7 +2,7 @@ import urllib3
 from fastapi import APIRouter, Response
 from starlette import status
 
-from config import mydb
+from db import mydb
 from model.check_data import is_integer
 from schemas.schemas import JobBenefitResult, JobBenefit, JobBenefitListResult
 from .jobs import detail_job
@@ -10,7 +10,7 @@ from .jobs import detail_job
 job_benefit_router = APIRouter()
 
 
-@job_benefit_router.post('/job-benefit/create', status_code=201)
+@job_benefit_router.post('/job-benefit', status_code=201)
 def create_job_benefit(request: JobBenefit, response: Response):
     job_benefit = request.job_benefit_to_dict()
     # Validate data
@@ -48,13 +48,13 @@ def __validate(req: dict):
 def _check_exist(benefit_id: int):
     # check benefit_id
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5004/benefit/detail/{benefit_id}')
+    r = http.request('GET', f'http://localhost:5004/benefit/{benefit_id}')
     if r.status != 200:
         return False, f"benefit_id is not exist"
     return True, None
 
 
-@job_benefit_router.get('/job-benefit/detail/{id}', status_code=200)
+@job_benefit_router.get('/job-benefit/{id}', status_code=200)
 def detail_job_benefit(id: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -66,7 +66,7 @@ def detail_job_benefit(id: int, response: Response):
         return True, JobBenefitResult(job_benefit)
 
 
-@job_benefit_router.get('/job-benefit/all/', status_code=200)
+@job_benefit_router.get('/job-benefit', status_code=200)
 def all_job_benefit(page: int, limit: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -89,7 +89,7 @@ def all_job_benefit(page: int, limit: int, response: Response):
         return JobBenefitListResult(job_benefit_list)
 
 
-@job_benefit_router.put('/job-benefit/update/{id}', status_code=200)
+@job_benefit_router.put('/job-benefit/{id}', status_code=200)
 async def update_job_benefit(id: int, req: JobBenefit, response: Response):
     # check id is existed or not
     boolean, result = detail_job_benefit(id, response)
@@ -126,7 +126,7 @@ def __check_exist(old_result: dict, new_req: dict):
     return True, None
 
 
-@job_benefit_router.delete('/job-benefit/delete/{id}', status_code=200)
+@job_benefit_router.delete('/job-benefit/{id}', status_code=200)
 async def delete_job_category(id: int, response: Response):
     boolean, result = detail_job_benefit(id, response)
     if boolean is False:

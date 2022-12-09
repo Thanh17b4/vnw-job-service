@@ -3,14 +3,14 @@ from fastapi import APIRouter, Response
 from slugify import slugify
 from starlette import status
 
-from config import mydb
+from db import mydb
 from model.check_data import is_blank, is_integer
 from schemas.schemas import Job, JobResult, JobListResult
 
 job_router = APIRouter()
 
 
-@job_router.post('/jobs/create/', status_code=201)
+@job_router.post('/jobs', status_code=201)
 def create_job(request: Job, response: Response):
     job = request.job_to_dict()
     # Validate data
@@ -54,13 +54,13 @@ def __validate(req: dict):
 
 def _check_account_exist(id: int):
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5002/company/detail/{id}')
+    r = http.request('GET', f'http://localhost:5002/company/{id}')
     if r.status != 200:
         return False, f"company_id is not exist"
     return True, None
 
 
-@job_router.get('/jobs/detail/{id}', status_code=200)
+@job_router.get('/jobs/{id}', status_code=200)
 def detail_job(id: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -72,7 +72,7 @@ def detail_job(id: int, response: Response):
         return True, JobResult(job)
 
 
-@job_router.get('/jobs/all/', status_code=200)
+@job_router.get('/jobs', status_code=200)
 def all_job(page: int, limit: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -95,7 +95,7 @@ def all_job(page: int, limit: int, response: Response):
         return JobListResult(jobs)
 
 
-@job_router.put('/jobs/update/{id}', status_code=200)
+@job_router.put('/jobs/{id}', status_code=200)
 async def update_job(id: int, req: Job, response: Response):
     job = req.job_to_dict()
     boolean, result = detail_job(id, response)
@@ -115,8 +115,8 @@ async def update_job(id: int, req: Job, response: Response):
         return f"{my_cursor.rowcount} row affected"
 
 
-@job_router.delete('/jobs/delete/{id}', status_code=200)
-async def update_job(id: int, response: Response):
+@job_router.delete('/jobs/{id}', status_code=200)
+async def delete_job(id: int, response: Response):
     boolean, result = detail_job(id, response)
     if boolean is False:
         response.status_code = status.HTTP_400_BAD_REQUEST

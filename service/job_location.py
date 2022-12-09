@@ -2,14 +2,14 @@ import urllib3
 from fastapi import APIRouter, Response
 from starlette import status
 
-from config import mydb
+from db import mydb
 from schemas.schemas import JobLocationResult, JobLocationListResult, JobLocation
 from .jobs import detail_job
 
 job_location_router = APIRouter()
 
 
-@job_location_router.post('/job-location/create', status_code=201)
+@job_location_router.post("/job-location", status_code=201)
 def create_job_location(request: JobLocation, response: Response):
     new_job_location = request.job_location_to_dict()
     # Validate data
@@ -49,13 +49,13 @@ def __validate(req: dict):
 def _check_location_id(location_id: int):
     # check location_id
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5001/locations/detail/{location_id}')
+    r = http.request("GET", f"http://localhost:5001/locations/{location_id}")
     if r.status != 200:
         return False, f"location_id is not exist"
     return True, None
 
 
-@job_location_router.get('/job-location/detail/{id}', status_code=200)
+@job_location_router.get("/job-location/{id}", status_code=200)
 def detail_job_location(id: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -67,7 +67,7 @@ def detail_job_location(id: int, response: Response):
         return True, JobLocationResult(job_location)
 
 
-@job_location_router.get('/job-location/all/', status_code=200)
+@job_location_router.get("/job-location", status_code=200)
 def all_job_location(page: int, limit: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -82,7 +82,9 @@ def all_job_location(page: int, limit: int, response: Response):
         if page > total_page or page <= 0:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return f"page is not exist, total page is {total_page}"
-        my_cursor.execute("SELECT * FROM job_location LIMIT %s OFFSET %s", (limit, offset))
+        my_cursor.execute(
+            "SELECT * FROM job_location LIMIT %s OFFSET %s", (limit, offset)
+        )
         job_location = my_cursor.fetchall()
         if job_location is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
@@ -90,7 +92,7 @@ def all_job_location(page: int, limit: int, response: Response):
         return JobLocationListResult(job_location)
 
 
-@job_location_router.put('/job-location/update/{id}', status_code=200)
+@job_location_router.put("/job-location/{id}", status_code=200)
 async def update_job_location(id: int, req: JobLocation, response: Response):
     # check job_location existed or not in job_location table
     new_job_location = req.job_location_to_dict()
@@ -115,24 +117,30 @@ async def update_job_location(id: int, req: JobLocation, response: Response):
     # update record
     with mydb:
         my_cursor = mydb.cursor()
-        sql = "UPDATE new_job_location SET job_id = %s, location_id = %s   WHERE id = %s"
+        sql = (
+            "UPDATE new_job_location SET job_id = %s, location_id = %s   WHERE id = %s"
+        )
         val = (new_job_location["job_id"], new_job_location["location_id"], id)
         my_cursor.execute(sql, val)
         return f"{my_cursor.rowcount} row affected"
 
 
 def __check_change(req: dict, new_req: dict):
-    if req["job_id"] == new_req["job_id"] and req["location_id"] == new_req["location_id"]:
+    if (
+        req["job_id"] == new_req["job_id"]
+        and req["location_id"] == new_req["location_id"]
+    ):
         return False, "no information have been changed"
     return new_req, ""
 
 
-@job_location_router.delete('/job-location/delete/{id}', status_code=200)
+@job_location_router.delete("/job-location/{id}", status_code=200)
 async def delete_job_location(id: int, response: Response):
     boolean, result = detail_job_location(id, response)
     if boolean is False:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return result
+
     with mydb:
         my_cursor = mydb.cursor()
         my_cursor.execute("DELETE FROM job_location WHERE id = %d" % id)

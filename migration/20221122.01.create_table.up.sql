@@ -1,13 +1,13 @@
 CREATE TABLE jobs
 (
     id          SERIAL PRIMARY KEY NOT NULL,
-    name        VARCHAR(255)       NOT NULL,
-    level       VARCHAR(255)       NOT NULL,
-    salary      VARCHAR(50)        NOT NULL,
-    CV_language VARCHAR(255)       NOT NULL,
-    type        VARCHAR(255)       NOT NULL,
-    slug        VARCHAR(255)       NOT NULL,
-    company_id  VARCHAR(255)       NOT NULL,
+    name        TEXT               NOT NULL,
+    level       TEXT               NOT NULL,
+    salary      TEXT               NOT NULL,
+    CV_language TEXT               NOT NULL,
+    type        TEXT               NOT NULL,
+    slug        TEXT               NOT NULL,
+    company_id  TEXT               NOT NULL,
     created_at  TIMESTAMP(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP(6)       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     due_at      TIMESTAMP(6)       NOT NULL
@@ -15,8 +15,8 @@ CREATE TABLE jobs
 
 CREATE TABLE job_location
 (
-    job_id        INTEGER     NOT NULL,
-    location_name VARCHAR(30) NOT NULL,
+    job_id        INTEGER NOT NULL,
+    location_name TEXT    NOT NULL,
     CONSTRAINT fk1 FOREIGN KEY (job_id) REFERENCES jobs (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

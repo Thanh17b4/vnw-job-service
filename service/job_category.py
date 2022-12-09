@@ -2,7 +2,7 @@ import urllib3
 from fastapi import APIRouter, Response
 from starlette import status
 
-from config import mydb
+from db import mydb
 from model.check_data import is_integer
 from schemas.schemas import JobCategory, JobCategoryListResult, JobCategoryResult
 from .jobs import detail_job
@@ -10,7 +10,7 @@ from .jobs import detail_job
 job_category_router = APIRouter()
 
 
-@job_category_router.post('/job-category/create', status_code=201)
+@job_category_router.post('/job-category', status_code=201)
 def create_job_category(request: JobCategory, response: Response):
     job_category = request.job_category_to_dict()
     # Validate data
@@ -50,13 +50,13 @@ def __validate(req: dict):
 def _check_category_id(category_id: int):
     # check benefit_id
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5003/category/detail/{category_id}')
+    r = http.request('GET', f'http://localhost:5003/category/{category_id}')
     if r.status != 200:
         return False, f"category_id is not exist"
     return True, None
 
 
-@job_category_router.get('/job-category/detail/{id}', status_code=200)
+@job_category_router.get('/job-category/{id}', status_code=200)
 def detail_job_category(id: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -68,7 +68,7 @@ def detail_job_category(id: int, response: Response):
         return True, JobCategoryResult(job_category)
 
 
-@job_category_router.get('/job-category/all/', status_code=200)
+@job_category_router.get('/job-category', status_code=200)
 def all_job_category(page: int, limit: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -91,7 +91,7 @@ def all_job_category(page: int, limit: int, response: Response):
         return JobCategoryListResult(job_category)
 
 
-@job_category_router.put('/job-category/update/{id}', status_code=200)
+@job_category_router.put('/job-category/{id}', status_code=200)
 async def update_job_category(id: int, req: JobCategory, response: Response):
     job_category = req.job_category_to_dict()
     boolean, result = detail_job_category(id, response)
@@ -126,7 +126,7 @@ def __check_changes(req: dict, new_req: dict):
     return new_req, ""
 
 
-@job_category_router.delete('/job-category/delete/{id}', status_code=200)
+@job_category_router.delete('/job-category/{id}', status_code=200)
 async def delete_job_category(id: int, response: Response):
     boolean, result = detail_job_category(id, response)
     if boolean is False:
