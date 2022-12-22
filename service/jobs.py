@@ -5,7 +5,7 @@ from starlette import status
 
 from db import mydb
 from model.check_data import is_blank, is_integer
-from schemas.schemas import Job, JobResult, JobListResult
+from schemas.jobs import Job, job_result, job_list_result
 
 job_router = APIRouter()
 
@@ -16,7 +16,7 @@ def create_job(request: Job, response: Response):
     # Validate data
     is_ok, msg = __validate(job)
     if is_ok is False:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return msg
     # check company_id is existed or not
     ok, result = _check_account_exist(job["company_id"])
@@ -54,7 +54,7 @@ def __validate(req: dict):
 
 def _check_account_exist(id: int):
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5002/company/{id}')
+    r = http.request('GET', f'http://localhost:5002/companies/{id}')
     if r.status != 200:
         return False, f"company_id is not exist"
     return True, None
@@ -69,7 +69,7 @@ def detail_job(id: int, response: Response):
         if job is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return False, f"job_id is not correct"
-        return True, JobResult(job)
+        return True, job_result(job)
 
 
 @job_router.get('/jobs', status_code=200)
@@ -85,14 +85,14 @@ def all_job(page: int, limit: int, response: Response):
             total_page = total_jobs // limit + 1
         offset = (page - 1) * limit
         if page > total_page or page <= 0:
-            response.status_code = status.HTTP_400_BAD_REQUEST
-            return f"page is not exist, total page is {total_page}"
+            response.status_code = status.HTTP_204_NO_CONTENT
+            return f"no record found"
         my_cursor.execute("SELECT * FROM jobs ORDER BY id LIMIT %s OFFSET %s", (limit, offset))
         jobs = my_cursor.fetchall()
         if jobs is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return f"query was wrong"
-        return JobListResult(jobs)
+        return job_list_result(jobs)
 
 
 @job_router.put('/jobs/{id}', status_code=200)
@@ -115,7 +115,7 @@ async def update_job(id: int, req: Job, response: Response):
         return f"{my_cursor.rowcount} row affected"
 
 
-@job_router.delete('/jobs/{id}', status_code=200)
+@job_router.delete('/jobs/{id}', status_code=204)
 async def delete_job(id: int, response: Response):
     boolean, result = detail_job(id, response)
     if boolean is False:

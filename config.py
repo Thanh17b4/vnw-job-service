@@ -10,10 +10,11 @@ class Settings(BaseSettings):
     PG_DATABASE: str
     PG_USER: str
     PG_PASSWORD: str
+    SQLALCHEMY_TEST_DATABASE_URI: str
 
-    class Config:
-        config = dotenv_values(".env")
+
+class Config:
+    value_from_env = dotenv_values(".env")
 
 
 settings = Settings()
-

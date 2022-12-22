@@ -48,3 +48,7 @@ Werkzeug==2.2.2
 wrapt==1.14.1
 yarg==0.1.9
 zipp==3.10.0
+
+psycopg2~=2.9.5
+SQLAlchemy~=1.4.45
+httpx~=0.23.1

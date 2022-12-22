@@ -5,9 +5,9 @@ repos:
         name: pylint
         entry: pylint
         language: system
-        types: [python]
+        types: [ python ]
       - id: black
         name: black
         entry: black
         language: system
-        types: [python]
+        types: [ python ]

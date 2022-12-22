@@ -4,19 +4,19 @@ from starlette import status
 
 from db import mydb
 from model.check_data import is_integer
-from schemas.schemas import JobCategory, JobCategoryListResult, JobCategoryResult
+from schemas.job_category import JobCategory, job_category_list_result, job_category_result
 from .jobs import detail_job
 
 job_category_router = APIRouter()
 
 
-@job_category_router.post('/job-category', status_code=201)
+@job_category_router.post('/job-categories', status_code=201)
 def create_job_category(request: JobCategory, response: Response):
     job_category = request.job_category_to_dict()
     # Validate data
     is_ok, msg = __validate(job_category)
     if is_ok is False:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return msg
     # check job_id valid or not
     ok, result = detail_job(job_category["job_id"], response)
@@ -26,7 +26,7 @@ def create_job_category(request: JobCategory, response: Response):
     # check benefit_id valid or not:
     ok, txt = _check_category_id(job_category["category_id"])
     if ok is False:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return txt
     # insert new record in to job_category table
     with mydb:
@@ -50,13 +50,13 @@ def __validate(req: dict):
 def _check_category_id(category_id: int):
     # check benefit_id
     http = urllib3.PoolManager()
-    r = http.request('GET', f'http://localhost:5003/category/{category_id}')
+    r = http.request('GET', f'http://localhost:5003/categories/{category_id}')
     if r.status != 200:
         return False, f"category_id is not exist"
     return True, None
 
 
-@job_category_router.get('/job-category/{id}', status_code=200)
+@job_category_router.get('/job-categories/{id}', status_code=204)
 def detail_job_category(id: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -65,10 +65,10 @@ def detail_job_category(id: int, response: Response):
         if job_category is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return False, f"id is not correct"
-        return True, JobCategoryResult(job_category)
+        return True, job_category_result(job_category)
 
 
-@job_category_router.get('/job-category', status_code=200)
+@job_category_router.get('/job-categories', status_code=200)
 def all_job_category(page: int, limit: int, response: Response):
     with mydb:
         my_cursor = mydb.cursor()
@@ -88,10 +88,10 @@ def all_job_category(page: int, limit: int, response: Response):
         if job_category is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
             return f"query was wrong"
-        return JobCategoryListResult(job_category)
+        return job_category_list_result(job_category)
 
 
-@job_category_router.put('/job-category/{id}', status_code=200)
+@job_category_router.put('/job-categories/{id}', status_code=200)
 async def update_job_category(id: int, req: JobCategory, response: Response):
     job_category = req.job_category_to_dict()
     boolean, result = detail_job_category(id, response)
@@ -100,17 +100,18 @@ async def update_job_category(id: int, req: JobCategory, response: Response):
         return result
     # check have some changes or not
     ok, msg = __check_changes(result, job_category)
+    response.status_code = status.HTTP_400_BAD_REQUEST
     if ok is False:
         return msg
     # check job_id valid or not:
     ok, result = detail_job(job_category["job_id"], response)
     if ok is False:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return result
     # check category_id valid or not:
     ok, txt = _check_category_id(job_category["category_id"])
     if ok is False:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return txt
     with mydb:
         my_cursor = mydb.cursor()
@@ -126,7 +127,7 @@ def __check_changes(req: dict, new_req: dict):
     return new_req, ""
 
 
-@job_category_router.delete('/job-category/{id}', status_code=200)
+@job_category_router.delete('/job-categories/{id}', status_code=200)
 async def delete_job_category(id: int, response: Response):
     boolean, result = detail_job_category(id, response)
     if boolean is False:
