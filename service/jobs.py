@@ -3,7 +3,7 @@ from fastapi import APIRouter, Response
 from slugify import slugify
 from starlette import status
 
-from db import mydb
+from db import job_service_db
 from model.check_data import is_blank, is_integer
 from schemas.jobs import Job, job_result, job_list_result
 
@@ -25,13 +25,15 @@ def create_job(request: Job, response: Response):
         return result
     # create job
     slug = slugify(job["name"])
-    with mydb:
-        my_cursor = mydb.cursor()
+
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
+
         sql = "INSERT INTO jobs (name, cv_language, type, slug, company_id, level, due_at, salary) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
         val = (job["name"], job["cv_language"], job["type"], slug, job["company_id"], job["level"], job["due_at"],
                job["salary"])
         my_cursor.execute(sql, val)
-        mydb.commit()
+        job_service_db.commit()
         response.status_code = status.HTTP_201_CREATED
         return f"{my_cursor.rowcount} job has been inserted successfully"
 
@@ -62,8 +64,8 @@ def _check_account_exist(id: int):
 
 @job_router.get('/jobs/{id}', status_code=200)
 def detail_job(id: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("SELECT * FROM jobs WHERE id = %d" % id)
         job = my_cursor.fetchone()
         if job is None:
@@ -74,8 +76,8 @@ def detail_job(id: int, response: Response):
 
 @job_router.get('/jobs', status_code=200)
 def all_job(page: int, limit: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("SELECT COUNT(id) FROM jobs")
         total_jobs = my_cursor.fetchone()[0]
         d = total_jobs % limit
@@ -106,8 +108,8 @@ async def update_job(id: int, req: Job, response: Response):
     if ok is False:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return result
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         slug = slugify(job["name"])
         sql = "UPDATE jobs SET name = %s, level = %s, cv_language = %s, type = %s, company_id = %s, due_at = %s, slug = %s   WHERE id = %s"
         val = (job["name"], job["level"], job["cv_language"], job["type"], job["company_id"], job["due_at"], slug, id)
@@ -121,7 +123,7 @@ async def delete_job(id: int, response: Response):
     if boolean is False:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return result
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("DELETE FROM jobs WHERE id = %d" % id)
         return f"{my_cursor.rowcount} row affected"

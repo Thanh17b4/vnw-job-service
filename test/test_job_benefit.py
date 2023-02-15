@@ -1,12 +1,12 @@
-from test.engine import EngineTestCase
+from test.engine.engine_test_job_benefit import EngineTestCase
 
 
 class TestJobBenefit(EngineTestCase):
     def setUp(self):
-        super(TestJobBenefit, self).setUp()
+        super(TestJobBenefit, self).setup_database()
         self.create_job_benefit = {
-            "job_id": 103,
-            "benefit_id": 1
+            "job_id": 1,
+            "benefit_id": 2
         }
         self.create_job_benefit_fail_1 = {
             "job_id": 1,
@@ -23,11 +23,11 @@ class TestJobBenefit(EngineTestCase):
         }
 
         self.create_job_benefit_fail_4 = {
-            "job_id": 103
+            "job_id": 1
         }
 
         self.update_job_benefit = {
-            "job_id": 103,
+            "job_id": 1,
             "benefit_id": 2
         }
 
@@ -40,30 +40,30 @@ class TestJobBenefit(EngineTestCase):
         }
 
         self.update_job_benefit_fail_3 = {
-            "job_id": 103,
-            "benefit_id": 2
-        }
-
-        self.update_job_benefit_fail_4 = {
-            "job_id": 103,
-            "benefit_id": 1000
-        }
-
-        self.update_job_benefit_fail_5 = {
             "job_id": 1,
             "benefit_id": 1
         }
 
+        self.update_job_benefit_fail_4 = {
+            "job_id": 1,
+            "benefit_id": 1000
+        }
+
+        self.update_job_benefit_fail_5 = {
+            "job_id": 100,
+            "benefit_id": 1
+        }
+
         self.read_job_benefit = {
-            "id": 3
+            "id": 1
         }
 
         self.delete_job_benefit = {
-            "id": 3
+            "id": 1
         }
 
     def tearDown(self):
-        super(TestJobBenefit, self).tearDown()
+        super(TestJobBenefit, self).teardown_database()
 
     # Test create job with given data
     def test_create_job_benefits(self):

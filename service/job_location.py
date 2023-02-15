@@ -2,7 +2,7 @@ import urllib3
 from fastapi import APIRouter, Response
 from starlette import status
 
-from db import mydb
+from db import job_service_db
 from schemas.job_location import job_location_result, job_location_list_result, JobLocation
 from .jobs import detail_job
 
@@ -28,12 +28,12 @@ def create_job_location(request: JobLocation, response: Response):
         response.status_code = status.HTTP_400_BAD_REQUEST
         return txt
     # insert new record in to job_location table
-    with mydb:
-        my_cursor = mydb.cursor()
-        sql = "INSERT INTO job_location (job_id, location_id) VALUES (%s, %s)"
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
+        sql = "INSERT INTO job_locations (job_id, location_id) VALUES (%s, %s)"
         val = (new_job_location["job_id"], new_job_location["location_id"])
         my_cursor.execute(sql, val)
-        mydb.commit()
+        job_service_db.commit()
         response.status_code = status.HTTP_201_CREATED
         return f"{my_cursor.rowcount} job_location has been inserted successfully"
 
@@ -57,9 +57,9 @@ def _check_location_id(location_id: int):
 
 @job_location_router.get("/job-locations/{id}", status_code=200)
 def detail_job_location(id: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
-        my_cursor.execute("SELECT * FROM job_location WHERE id = %d" % id)
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
+        my_cursor.execute("SELECT * FROM job_locations WHERE id = %d" % id)
         job_location = my_cursor.fetchone()
         if job_location is None:
             response.status_code = status.HTTP_400_BAD_REQUEST
@@ -69,9 +69,9 @@ def detail_job_location(id: int, response: Response):
 
 @job_location_router.get("/job-locations", status_code=200)
 def all_job_location(page: int, limit: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
-        my_cursor.execute("SELECT COUNT(id) FROM job_location")
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
+        my_cursor.execute("SELECT COUNT(id) FROM job_locations")
         total_records = my_cursor.fetchone()[0]
         d = total_records % limit
         if d == 0:
@@ -83,7 +83,7 @@ def all_job_location(page: int, limit: int, response: Response):
             response.status_code = status.HTTP_400_BAD_REQUEST
             return f"page is not exist, total page is {total_page}"
         my_cursor.execute(
-            "SELECT * FROM job_location LIMIT %s OFFSET %s", (limit, offset)
+            "SELECT * FROM job_locations LIMIT %s OFFSET %s", (limit, offset)
         )
         job_location = my_cursor.fetchall()
         if job_location is None:
@@ -116,10 +116,10 @@ async def update_job_location(id: int, req: JobLocation, response: Response):
         response.status_code = status.HTTP_204_NO_CONTENT
         return msg
     # update record
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         sql = (
-            "UPDATE job_location SET job_id = %s, location_id = %s   WHERE id = %s"
+            "UPDATE job_locations SET job_id = %s, location_id = %s   WHERE id = %s"
         )
         val = (new_job_location["job_id"], new_job_location["location_id"], id)
         my_cursor.execute(sql, val)
@@ -135,14 +135,14 @@ def __check_change(req: dict, new_req: dict):
     return new_req, ""
 
 
-@job_location_router.delete("/job-locations/{id}", status_code=200)
+@job_location_router.delete("/job-locations/{id}", status_code=204)
 async def delete_job_location(id: int, response: Response):
     boolean, result = detail_job_location(id, response)
     if boolean is False:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return result
 
-    with mydb:
-        my_cursor = mydb.cursor()
-        my_cursor.execute("DELETE FROM job_location WHERE id = %d" % id)
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
+        my_cursor.execute("DELETE FROM job_locations WHERE id = %d" % id)
         return f"{my_cursor.rowcount} row affected"

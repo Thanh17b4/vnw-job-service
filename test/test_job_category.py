@@ -1,11 +1,12 @@
-from test.engine import EngineTestCase
+from test.engine.engine_test_job_category import EngineTestCase
 
 
 class TestJobCategory(EngineTestCase):
     def setUp(self):
-        super(TestJobCategory, self).setUp()
+        super(TestJobCategory, self).setup_database()
+
         self.create_job_category = {
-            "job_id": 106,
+            "job_id": 1,
             "category_id": 2
         }
         self.create_job_category_fail_1 = {
@@ -17,7 +18,7 @@ class TestJobCategory(EngineTestCase):
         }
 
         self.create_job_category_fail_3 = {
-            "job_id": 1,
+            "job_id": 100,
             "category_id": 1
         }
 
@@ -26,7 +27,7 @@ class TestJobCategory(EngineTestCase):
         }
 
         self.update_job_category = {
-            "job_id": 106,
+            "job_id": 1,
             "category_id": 2
         }
 
@@ -35,12 +36,12 @@ class TestJobCategory(EngineTestCase):
         }
 
         self.update_job_category_fail_2 = {
-            "job_id": 106
+            "job_id": 1
         }
 
         self.update_job_category_fail_3 = {
-            "job_id": 106,
-            "category_id": 2
+            "job_id": 1,
+            "category_id": 1
         }
 
         self.update_job_category_fail_4 = {
@@ -49,7 +50,7 @@ class TestJobCategory(EngineTestCase):
         }
 
         self.update_job_category_fail_5 = {
-            "job_id": 106,
+            "job_id": 1,
             "category_id": 100000
         }
 
@@ -58,11 +59,11 @@ class TestJobCategory(EngineTestCase):
         }
 
         self.delete_job_category = {
-            "id": 5
+            "id": 1
         }
 
     def tearDown(self):
-        super(TestJobCategory, self).tearDown()
+        super(TestJobCategory, self).teardown_database()
 
     # Test create job with given data
     def test_create_job_categories(self):
@@ -129,7 +130,7 @@ class TestJobCategory(EngineTestCase):
 
     # Test update job_benefit with ID
     def test_update_job_categories(self):
-        response = self.client.put(f"/job-categories/3", json=self.update_job_category)
+        response = self.client.put(f"/job-categories/1", json=self.update_job_category)
         actual_code = response.status_code
         expected_code = 200
         self.assertEqual(expected_code, actual_code)
@@ -157,14 +158,14 @@ class TestJobCategory(EngineTestCase):
 
     # Test update job_benefit with no information has been changed
     def test_update_job_categories_fail_3(self):
-        response = self.client.put(f"/job-categories/3", json=self.update_job_category_fail_3)
+        response = self.client.put(f"/job-categories/1", json=self.update_job_category_fail_3)
         actual_code = response.status_code
         expected_code = 400
         self.assertEqual(expected_code, actual_code)
 
     # Test update job_benefit with "job_id" invalid
     def test_update_job_categories_fail_4(self):
-        response = self.client.put(f"/job-categories/3", json=self.update_job_category_fail_4)
+        response = self.client.put(f"/job-categories/1", json=self.update_job_category_fail_4)
         actual_code = response.status_code
         expected_code = 422
         self.assertEqual(expected_code, actual_code)

@@ -2,7 +2,7 @@ import urllib3
 from fastapi import APIRouter, Response
 from starlette import status
 
-from db import mydb
+from db import job_service_db
 from model.check_data import is_integer
 from schemas.job_benefit import JobBenefit, job_benefit_result, job_benefit_list_result
 from .jobs import detail_job
@@ -29,12 +29,12 @@ def create_job_benefit(request: JobBenefit, response: Response):
         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return txt
     # insert new record in to job_benefits table
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         sql = "INSERT INTO job_benefits (job_id, benefit_id) VALUES (%s, %s)"
         val = (job_benefit["job_id"], job_benefit["benefit_id"])
         my_cursor.execute(sql, val)
-        mydb.commit()
+        job_service_db.commit()
         return f"{my_cursor.rowcount} job_benefit has been inserted successfully"
 
 
@@ -57,8 +57,8 @@ def _check_exist(benefit_id: int):
 
 @job_benefit_router.get('/job-benefits/{id}', status_code=200)
 def detail_job_benefit(id: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("SELECT * FROM job_benefits WHERE id = %d" % id)
         job_benefit = my_cursor.fetchone()
         if job_benefit is None:
@@ -69,8 +69,8 @@ def detail_job_benefit(id: int, response: Response):
 
 @job_benefit_router.get('/job-benefits', status_code=200)
 def all_job_benefit(page: int, limit: int, response: Response):
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("SELECT COUNT(id) FROM job_benefits")
         total_records = my_cursor.fetchone()[0]
         d = total_records % limit
@@ -114,8 +114,8 @@ async def update_job_benefit(id: int, req: JobBenefit, response: Response):
         response.status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
         return txt
     # update record
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         sql = "UPDATE job_benefits SET job_id = %s, benefit_id = %s   WHERE id = %s"
         val = (new_job_benefit["job_id"], new_job_benefit["benefit_id"], id)
         my_cursor.execute(sql, val)
@@ -135,7 +135,7 @@ async def delete_job_category(id: int, response: Response):
     if boolean is False:
         response.status_code = status.HTTP_204_NO_CONTENT
         return result
-    with mydb:
-        my_cursor = mydb.cursor()
+    with job_service_db:
+        my_cursor = job_service_db.cursor()
         my_cursor.execute("DELETE FROM job_benefits WHERE id = %d" % id)
         return f"{my_cursor.rowcount} row affected"

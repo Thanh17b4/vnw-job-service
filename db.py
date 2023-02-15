@@ -2,10 +2,13 @@ import psycopg2
 
 from config import settings
 
-mydb = psycopg2.connect(
-    host=settings.PG_HOST,
-    port=settings.PG_PORT,
-    database=settings.PG_DATABASE,
-    user=settings.PG_USER,
-    password=settings.PG_PASSWORD
+
+def get_pg_db():
+    db_url = settings.SQLALCHEMY_DATABASE_URI
+    print("db_url: ", db_url)
+    return db_url
+
+
+job_service_db = psycopg2.connect(
+    get_pg_db()
 )

@@ -1,23 +1,23 @@
-from test.engine import EngineTestCase
+from test.engine.engine_test_job_location import EngineTestCase
 
 
 class TestJobLocation(EngineTestCase):
     def setUp(self):
-        super(TestJobLocation, self).setUp()
+        super(TestJobLocation, self).setup_database()
         self.create_job_location = {
-            "job_id": 106,
-            "location_id": 1
+            "job_id": 1,
+            "location_id": 2
         }
         self.create_job_location_fail_1 = {
             "location_id": 1
         }
 
         self.create_job_location_fail_2 = {
-            "job_id": 106
+            "job_id": 1
         }
 
         self.create_job_location_fail_3 = {
-            "job_id": 1,
+            "job_id": 100,
             "location_id": 1
         }
 
@@ -26,7 +26,7 @@ class TestJobLocation(EngineTestCase):
         }
 
         self.update_job_location = {
-            "job_id": 106,
+            "job_id": 1,
             "location_id": 2
         }
 
@@ -35,7 +35,7 @@ class TestJobLocation(EngineTestCase):
         }
 
         self.update_job_location_fail_2 = {
-            "job_id": 106
+            "job_id": 2
         }
 
         self.update_job_location_fail_3 = {
@@ -50,19 +50,19 @@ class TestJobLocation(EngineTestCase):
 
         self.update_job_location_fail_5 = {
             "job_id": 106,
-            "location_id": 100000
+            "location_id": 2
         }
 
         self.read_job_location = {
-            "id": 5
+            "id": 1
         }
 
         self.delete_job_location = {
-            "id": 6
+            "id": 1
         }
 
     def tearDown(self):
-        super(TestJobLocation, self).tearDown()
+        super(TestJobLocation, self).teardown_database()
 
     # Test create job with given data
     def test_create_job_locations(self):
@@ -129,7 +129,7 @@ class TestJobLocation(EngineTestCase):
 
     # Test update job_location with ID
     def test_update_job_locations(self):
-        response = self.client.put(f"/job-locations/5", json=self.update_job_location)
+        response = self.client.put(f"/job-locations/1", json=self.update_job_location)
         actual_code = response.status_code
         expected_code = 200
         self.assertEqual(expected_code, actual_code)
@@ -159,7 +159,7 @@ class TestJobLocation(EngineTestCase):
     def test_update_job_locations_fail_3(self):
         response = self.client.put(f"/job-locations/5", json=self.update_job_location_fail_3)
         actual_code = response.status_code
-        expected_code = 204
+        expected_code = 422
         self.assertEqual(expected_code, actual_code)
 
     # Test update job_location with "job_id" invalid

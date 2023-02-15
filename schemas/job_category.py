@@ -1,13 +1,9 @@
-from datetime import datetime
-
 from pydantic import BaseModel
 
 
 class JobCategory(BaseModel):
     job_id: int
     category_id: int
-    created_at: datetime or None = None
-    updated_at: datetime or None = None
 
     def job_category_to_dict(self):
         return vars(self)
